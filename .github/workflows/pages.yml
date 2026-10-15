@@ -1,3 +1,11 @@
+# SIG:BEGIN:header
+# ============================================================
+#  署名信息 / ATTRIBUTION  —  请勿删除 (DO NOT REMOVE)
+#  制作人：徐徐
+#  email：doublebean@vip.qq.com
+#  Copyright (c) 2026 徐徐 <doublebean@vip.qq.com>. All Rights Reserved.
+# ============================================================
+# SIG:END:header
 name: Deploy GitHub Pages
 
 on:
@@ -24,6 +32,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+# SIG:BEGIN:deploy-guard
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # 署名校验：缺失或被篡改则部署中止（制作人：徐徐 / doublebean@vip.qq.com）
+      - name: Verify author signature (blocks deploy if removed)
+        run: python tools/signature_guard.py check
+# SIG:END:deploy-guard
       - name: Prepare static site
         run: |
           mkdir -p _site

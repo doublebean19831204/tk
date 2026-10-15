@@ -1,0 +1,35 @@
+# ============================================================
+#  署名信息 / ATTRIBUTION  —  请勿删除 (DO NOT REMOVE)
+#  制作人：徐徐
+#  email：doublebean@vip.qq.com
+#  Copyright (c) 2026 徐徐 <doublebean@vip.qq.com>. All Rights Reserved.
+#
+#  作用：每次 push / PR 逐字校验全部署名块，缺失或被篡改即失败。
+# ============================================================
+name: Signature Guard
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  signature-check:
+    name: Verify author signature
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Check signature integrity (fails if removed or tampered)
+        run: python tools/signature_guard.py check

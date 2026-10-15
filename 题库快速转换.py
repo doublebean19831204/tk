@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SIG:BEGIN:header
+# ============================================================
+#  署名信息 / ATTRIBUTION  —  请勿删除 (DO NOT REMOVE)
+#  制作人：徐徐
+#  email：doublebean@vip.qq.com
+#  Copyright (c) 2026 徐徐 <doublebean@vip.qq.com>. All Rights Reserved.
+# ============================================================
+# SIG:END:header
 """
 水利工程题库转换器
 专门处理题库.txt格式

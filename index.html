@@ -3,6 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- SIG:BEGIN:meta -->
+    <!-- ============================================================
+         署名信息 / ATTRIBUTION  —  请勿删除 (DO NOT REMOVE)
+         制作人：徐徐
+         email：doublebean@vip.qq.com
+         Copyright (c) 2026 徐徐 <doublebean@vip.qq.com>. All Rights Reserved.
+         本文件受 tools/signature_guard.py 与 CI 工作流保护：
+         删除或篡改署名会导致构建失败、GitHub Pages 停止部署。
+         ============================================================ -->
+    <meta name="author" content="徐徐 <doublebean@vip.qq.com>">
+    <meta name="copyright" content="Copyright (c) 2026 徐徐. All Rights Reserved.">
+    <meta name="creator" content="徐徐 / doublebean@vip.qq.com">
+<!-- SIG:END:meta -->
     <title>题库系统</title>
     <style>
         * {
@@ -387,6 +400,39 @@
             font-size: 16px;
             line-height: 1.8;
         }
+/* SIG:BEGIN:css */
+        /* ===== 署名样式（请勿删除 / DO NOT REMOVE） ===== */
+        .site-footer {
+            margin-top: 30px;
+            padding-top: 16px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            color: #888;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .site-footer .sig-line strong {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .site-footer a {
+            color: #888;
+            text-decoration: none;
+        }
+
+        .site-footer a:hover {
+            color: #667eea;
+            text-decoration: underline;
+        }
+
+        .site-footer .sig-copy {
+            font-size: 12px;
+            color: #bbb;
+            margin-top: 4px;
+        }
+/* SIG:END:css */
     </style>
 </head>
 <body>
@@ -437,6 +483,16 @@
             <div class="stats" id="stats"></div>
             <button class="btn-restart" onclick="restart()">重新开始</button>
         </div>
+
+<!-- SIG:BEGIN:footer -->
+        <!-- ===== 署名（请勿删除 / DO NOT REMOVE）=====
+             制作人：徐徐   email：doublebean@vip.qq.com -->
+        <footer class="site-footer" id="siteFooter">
+            <div class="sig-line">制作人：<strong>徐徐</strong></div>
+            <div class="sig-line">email：<a href="mailto:doublebean@vip.qq.com">doublebean@vip.qq.com</a></div>
+            <div class="sig-copy">Copyright &copy; 2026 徐徐. All Rights Reserved.</div>
+        </footer>
+<!-- SIG:END:footer -->
     </div>
 
     <script src="questions-data.js"></script>
@@ -457,15 +513,27 @@
 
         // 加载题库数据：优先使用内嵌的 questions-data.js（双击即可用），
         // 如果不存在再尝试从 questions.json 加载（需本地服务器）。
+/* SIG:BEGIN:strip */
+        // 剥离下划线开头的署名/元数据键，避免其出现在分类列表中
+        // （署名信息本身仍完整保留在文件里）
+        function stripSignatureMeta(data) {
+            const out = {};
+            Object.keys(data || {}).forEach(function (k) {
+                if (!k.startsWith('_')) out[k] = data[k];
+            });
+            return out;
+        }
+/* SIG:END:strip */
+
         async function loadQuizData() {
             if (window.QUIZ_DATA && Object.keys(window.QUIZ_DATA).length > 0) {
-                quizData = window.QUIZ_DATA;
+                quizData = stripSignatureMeta(window.QUIZ_DATA);
                 init();
                 return;
             }
             try {
                 const response = await fetch('questions.json');
-                quizData = await response.json();
+                quizData = stripSignatureMeta(await response.json());
                 init();
             } catch (error) {
                 console.error('加载题库失败:', error);
@@ -865,6 +933,70 @@
             renderCategoryButtons();
             renderQuestion();
         }
+/* SIG:BEGIN:guard */
+        /* ============================================================
+         *  署名保护 / SIGNATURE GUARD  —  请勿删除 (DO NOT REMOVE)
+         *  制作人：徐徐
+         *  email：doublebean@vip.qq.com
+         *  Copyright (c) 2026 徐徐. All Rights Reserved.
+         *
+         *  作用：即使有人从 HTML 里删掉页脚署名，本段代码也会在运行时
+         *  自动把它重建回来，并在控制台告警。
+         * ============================================================ */
+        const AUTHOR_SIGNATURE = Object.freeze({
+            name: '徐徐',
+            email: 'doublebean@vip.qq.com',
+            copyright: 'Copyright © 2026 徐徐. All Rights Reserved.'
+        });
+
+        (function signatureGuard() {
+            const FOOTER_ID = 'siteFooter';
+            const WARN = '[署名保护] 检测到署名被移除，已自动恢复。' +
+                         '制作人：徐徐 <doublebean@vip.qq.com>';
+
+            function buildFooter() {
+                const f = document.createElement('footer');
+                f.className = 'site-footer';
+                f.id = FOOTER_ID;
+                f.innerHTML =
+                    '<div class="sig-line">制作人：<strong>' + AUTHOR_SIGNATURE.name + '</strong></div>' +
+                    '<div class="sig-line">email：<a href="mailto:' + AUTHOR_SIGNATURE.email + '">' +
+                    AUTHOR_SIGNATURE.email + '</a></div>' +
+                    '<div class="sig-copy">' + AUTHOR_SIGNATURE.copyright + '</div>';
+                return f;
+            }
+
+            function ensure() {
+                if (document.getElementById(FOOTER_ID)) return;
+                const host = document.querySelector('.container') || document.body;
+                if (!host) return;
+                host.appendChild(buildFooter());
+                try { console.warn('%c' + WARN, 'color:#c0392b;font-weight:bold;'); } catch (e) {}
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', ensure);
+            } else {
+                ensure();
+            }
+
+            // 监听 DOM 变化：署名节点被删除时立即恢复
+            try {
+                new MutationObserver(function () { ensure(); })
+                    .observe(document.documentElement, { childList: true, subtree: true });
+            } catch (e) { /* 极老浏览器忽略 */ }
+
+            // 控制台常驻署名
+            try {
+                console.log(
+                    '%c题库系统%c  制作人：徐徐   email：doublebean@vip.qq.com',
+                    'background:#667eea;color:#fff;padding:2px 8px;border-radius:3px;font-weight:bold;',
+                    'color:#333;'
+                );
+                console.log('%c' + AUTHOR_SIGNATURE.copyright, 'color:#999;');
+            } catch (e) {}
+        })();
+/* SIG:END:guard */
     </script>
 </body>
 </html>

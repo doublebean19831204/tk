@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SIG:BEGIN:header
+# ============================================================
+#  署名信息 / ATTRIBUTION  —  请勿删除 (DO NOT REMOVE)
+#  制作人：徐徐
+#  email：doublebean@vip.qq.com
+#  Copyright (c) 2026 徐徐 <doublebean@vip.qq.com>. All Rights Reserved.
+# ============================================================
+# SIG:END:header
 """
 题库格式转换工具
 支持单选题、多选题、判断题的自动转换

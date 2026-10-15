@@ -1,3 +1,12 @@
+/* SIG:BEGIN:header */
+/* ============================================================
+ *  题库数据 / Quiz Data
+ *  署名信息 / ATTRIBUTION  —  请勿删除 (DO NOT REMOVE)
+ *  制作人：徐徐
+ *  email：doublebean@vip.qq.com
+ *  Copyright (c) 2026 徐徐 <doublebean@vip.qq.com>. All Rights Reserved.
+ * ============================================================ */
+/* SIG:END:header */
 window.QUIZ_DATA = {
   "单选题": [
     {
@@ -14410,3 +14419,14 @@ window.QUIZ_DATA = {
     }
   ]
 };
+
+/* SIG:BEGIN:sig */
+try {
+    window.QUIZ_DATA._signature = Object.freeze({
+        author: '徐徐',
+        email: 'doublebean@vip.qq.com',
+        copyright: 'Copyright (c) 2026 徐徐 <doublebean@vip.qq.com>. All Rights Reserved.',
+        notice: '制作人：徐徐 — 请勿删除本署名信息 / DO NOT REMOVE THIS ATTRIBUTION'
+    });
+} catch (e) {}
+/* SIG:END:sig */

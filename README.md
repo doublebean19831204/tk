@@ -1,5 +1,11 @@
 # 题库系统使用指南
 
+<!-- SIG:BEGIN:mdheader -->
+> **署名 / Attribution**
+> 制作人：徐徐 　email：<doublebean@vip.qq.com>
+> Copyright (c) 2026 徐徐. All Rights Reserved. — 请勿删除本署名信息。
+<!-- SIG:END:mdheader -->
+
 ## 🚀 快速开始
 
 1. **打开题库**  
