@@ -4,8 +4,8 @@
 # ============================================================
 #  署名信息 / ATTRIBUTION  —  请勿删除 (DO NOT REMOVE)
 #  制作人：徐徐
-#  email：doublebean@vip.qq.com
-#  Copyright (c) 2026 徐徐 <doublebean@vip.qq.com>. All Rights Reserved.
+#  微信：doublebean_vip
+#  Copyright (c) 2026 徐徐. All Rights Reserved.
 # ============================================================
 # SIG:END:header
 """

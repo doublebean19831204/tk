@@ -2,7 +2,7 @@
 
 <!-- SIG:BEGIN:mdheader -->
 > **署名 / Attribution**
-> 制作人：徐徐 　email：<doublebean@vip.qq.com>
+> 制作人：徐徐 　微信：doublebean_vip
 > Copyright (c) 2026 徐徐. All Rights Reserved. — 请勿删除本署名信息。
 <!-- SIG:END:mdheader -->
 

@@ -1,10 +1,10 @@
 # 署名 / AUTHORS
 
-| 角色 | 姓名 | 邮箱 |
+| 角色 | 姓名 | 微信 |
 | ---- | ---- | ---- |
-| 制作人 (Author) | **徐徐** | <doublebean@vip.qq.com> |
+| 制作人 (Author) | **徐徐** | doublebean_vip |
 
-**Copyright (c) 2026 徐徐 <doublebean@vip.qq.com>. All Rights Reserved.**
+**Copyright (c) 2026 徐徐. All Rights Reserved.**
 
 ---
 
@@ -26,10 +26,13 @@
 | 层级 | 位置 | 作用 |
 | ---- | ---- | ---- |
 | 1 | `index.html` `<meta name="author">` | 浏览器 / 搜索引擎可见的作者元数据 |
-| 2 | `index.html` 页脚 | 用户打开页面即可见的署名 |
+| 2 | `index.html` 页脚（含微信二维码） | 打开页面可见的低调署名 |
 | 3 | `index.html` `AUTHOR_SIGNATURE` + MutationObserver | 运行时自愈：页脚被删会自动重建并告警 |
 | 4 | `questions-data.js` / `questions.json` 的 `_signature` | 数据文件自带署名，脱离网页也能溯源 |
 | 5 | GitHub Actions（两个工作流） | 署名被删/被改则 CI 失败，Pages 停止部署 |
+
+微信二维码以 base64 存于 `tools/qr_data.txt`，其 sha256 被校验脚本钉死；
+`assets/wechat_qr.png` 为同一图片的本地留档。
 
 校验命令：
 
@@ -41,4 +44,4 @@ python tools/signature_guard.py list     # 列出全部受保护组件
 
 ---
 
-制作人：徐徐 　email：doublebean@vip.qq.com
+制作人：徐徐 　微信：doublebean_vip
