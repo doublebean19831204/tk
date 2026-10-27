@@ -219,7 +219,7 @@ def footer_body():
     return (
         "        <!-- 署名（请勿删除 / DO NOT REMOVE）| 制作人：徐徐 | 微信：doublebean_vip -->\n"
         '        <footer class="site-footer" id="siteFooter">\n'
-        '            <span class="sig-line">制作人：徐徐</span>\n'
+        '            <span class="sig-line">制作人：徐徐、任欣</span>\n'
         '            <span class="sig-sep">·</span>\n'
         '            <span class="sig-line">微信：doublebean_vip</span>\n'
         '            <img class="sig-qr" alt="微信二维码" title="微信：doublebean_vip"\n'
@@ -240,7 +240,7 @@ def guard_body():
     "         *  自动把它重建回来，并在控制台告警。\n"
     "         * ============================================================ */\n"
     "        const AUTHOR_SIGNATURE = Object.freeze({\n"
-    "            name: '徐徐',\n"
+    "            name: '徐徐、任欣',\n"
     "            wechat: 'doublebean_vip',\n"
     "            qr: '" + QR_URI + "',\n"
     "            copyright: 'Copyright © 2026 徐徐. All Rights Reserved.'\n"
@@ -249,7 +249,7 @@ def guard_body():
     "        (function signatureGuard() {\n"
     "            const FOOTER_ID = 'siteFooter';\n"
     "            const WARN = '[署名保护] 检测到署名被移除，已自动恢复。' +\n"
-    "                         '制作人：徐徐（微信：doublebean_vip）';\n"
+    "                         '制作人：徐徐、任欣（微信：doublebean_vip）';\n"
     "\n"
     "            function buildFooter() {\n"
     "                const f = document.createElement('footer');\n"
@@ -286,7 +286,7 @@ def guard_body():
     "\n"
     "            // 控制台常驻署名（低调）\n"
     "            try {\n"
-    "                console.log('%c题库系统%c  制作人：徐徐 · 微信：doublebean_vip',\n"
+    "                console.log('%c题库系统%c  制作人：徐徐、任欣 · 微信：doublebean_vip',\n"
     "                    'background:#bbb;color:#fff;padding:1px 6px;border-radius:3px;',\n"
     "                    'color:#999;');\n"
     "                console.log('%c' + AUTHOR_SIGNATURE.copyright, 'color:#ccc;');\n"
