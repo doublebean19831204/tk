@@ -121,16 +121,27 @@
 
         .category-selector::-webkit-scrollbar { display: none; }
 
+        /* 每个分类与其错题本上下两行对齐成一组 */
+        .cat-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cat-group + .cat-group {
+            border-left: 1px solid #eef1f4;
+        }
+
         .category-btn {
             border: none;
             background: transparent;
             color: #5a6b7b;
             font-size: 14px;
             font-weight: 600;
-            padding: 13px 16px 10px;
+            padding: 10px 18px 8px;
             border-bottom: 3px solid transparent;
             cursor: pointer;
             white-space: nowrap;
+            text-align: center;
             transition: color .2s ease, background .2s ease;
         }
 
@@ -141,7 +152,13 @@
             border-bottom-color: #3d7bff;
         }
 
-        .category-btn.wrong-btn { color: #b85c5c; }
+        /* 第二行：错题本（副行，字号略小） */
+        .category-btn.wrong-btn {
+            color: #b85c5c;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 6px 18px 8px;
+        }
         .category-btn.wrong-btn:hover { color: #d64545; background: #fff5f5; }
         .category-btn.wrong-btn.active { color: #d64545; border-bottom-color: #d64545; }
 
@@ -652,21 +669,25 @@
             const selector = document.getElementById('categorySelector');
             selector.innerHTML = '';
             Object.keys(quizData).forEach(category => {
+                // 一组 = 上下两行：第一行分类，第二行对应错题本
+                const group = document.createElement('div');
+                group.className = 'cat-group';
+
                 const btn = document.createElement('button');
                 btn.className = 'category-btn' + (category === currentCategory ? ' active' : '');
                 btn.textContent = category;
                 btn.onclick = () => selectCategory(category);
-                selector.appendChild(btn);
-            });
-            // 每个分类对应一个独立错题本
-            Object.keys(quizData).forEach(category => {
+                group.appendChild(btn);
+
                 const wid = WRONG_PREFIX + category;
                 const wbtn = document.createElement('button');
                 const wc = wrongCountOf(category);
                 wbtn.className = 'category-btn wrong-btn' + (currentCategory === wid ? ' active' : '');
                 wbtn.textContent = `${category}·错题(${wc})`;
                 wbtn.onclick = () => selectCategory(wid);
-                selector.appendChild(wbtn);
+                group.appendChild(wbtn);
+
+                selector.appendChild(group);
             });
         }
 
