@@ -85,24 +85,20 @@
         .option {
             display: flex;
             align-items: center;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
+            padding: 12px 10px;
+            border: 2px solid transparent;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
-            background: #fafafa;
+            background: #fff;
         }
 
         .option:hover {
-            border-color: #667eea;
             background: #f0f4ff;
         }
 
-        .option input[type="radio"] {
-            margin-right: 12px;
-            cursor: pointer;
-            width: 18px;
-            height: 18px;
+        .option input {
+            display: none;
         }
 
         .option.selected {
@@ -110,20 +106,95 @@
             background: #f0f4ff;
         }
 
-        .option.correct {
-            border-color: #4caf50;
-            background: #f1f8f4;
+        .option-circle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #ececec;
+            color: #666;
+            font-size: 14px;
+            font-weight: bold;
+            margin-right: 12px;
+            flex-shrink: 0;
         }
 
-        .option.incorrect {
-            border-color: #f44336;
-            background: #fef1f0;
+        .option.selected .option-circle {
+            background: #667eea;
+            color: #fff;
+        }
+
+        .option.is-correct .option-circle {
+            background: #26bf7a;
+            color: #fff;
+        }
+
+        .option.is-wrongpick .option-circle {
+            background: #f4504c;
+            color: #fff;
+        }
+
+        .option.is-correct .option-label {
+            color: #26bf7a;
+            font-weight: bold;
+        }
+
+        .option.answered {
+            pointer-events: none;
         }
 
         .option-label {
             cursor: pointer;
             flex: 1;
             user-select: none;
+            line-height: 1.5;
+        }
+
+        .qtype-badge {
+            display: inline-block;
+            background: #3d8bff;
+            color: #fff;
+            border-radius: 4px;
+            padding: 3px 10px;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .answer-line {
+            display: none;
+            margin-top: 18px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .answer-line.show {
+            display: flex;
+        }
+
+        .ans-correct {
+            color: #26bf7a;
+        }
+
+        .ans-wrong {
+            color: #f4504c;
+        }
+
+        .answer-stats {
+            display: none;
+            margin-top: 12px;
+            color: #999;
+            font-size: 13px;
+            line-height: 1.9;
+        }
+
+        .answer-stats.show {
+            display: block;
         }
 
         .result-section {
@@ -213,6 +284,28 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(118, 75, 162, 0.3);
         }
+
+        .btn-prev {
+            background: #fff;
+            color: #667eea;
+            border: 2px solid #667eea;
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .btn-prev:hover:not(:disabled) {
+            background: #667eea;
+            color: white;
+        }
+
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+
 
         .btn-restart {
             background: #667eea;
@@ -449,8 +542,11 @@
             </div>
             <div class="question-section" id="questionSection">
                 <div class="question-number" id="questionNumber"></div>
+                <div><span class="qtype-badge" id="qtypeBadge"></span></div>
                 <div class="question-text" id="questionText"></div>
                 <div class="options" id="optionsContainer"></div>
+                <div class="answer-line" id="answerLine"></div>
+                <div class="answer-stats" id="answerStats"></div>
                 <div class="result-section" id="resultSection">
                     <div class="result-title" id="resultTitle"></div>
                     <div class="result-text" id="resultText"></div>
@@ -462,8 +558,9 @@
             </div>
 
             <div class="buttons">
+                <button class="btn-prev" id="prevBtn" onclick="prevQuestion()">上一页</button>
                 <button class="btn-submit" id="submitBtn" onclick="submitAnswer()">确定</button>
-                <button class="btn-next" id="nextBtn" onclick="nextQuestion()" style="display: none;">下一题</button>
+                <button class="btn-next" id="nextBtn" onclick="nextQuestion()">下一页</button>
                 <button class="btn-small btn-clearwrong" id="masterBtn" onclick="masterCurrent()" style="display: none;">已掌握，移出错题本</button>
             </div>
         </div>
@@ -496,6 +593,8 @@
         const LS_PROGRESS = 'quiz_progress_v1';
         const LS_WRONG = 'quiz_wrong_v1';
         const LS_LAST = 'quiz_last_category_v1';
+        const LS_STATS = 'quiz_stats_v1';
+        const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
         let quizData = {};
         let currentCategory = '';
@@ -686,6 +785,11 @@
             document.getElementById('questionNumber').textContent = label;
             document.getElementById('questionText').textContent = question.question;
 
+            // 题型徽章：单选 / 多选 / 判断
+            const baseCat = isWrong(currentCategory) ? realCat(currentCategory) : currentCategory;
+            document.getElementById('qtypeBadge').textContent =
+                baseCat.includes('判断') ? '判断' : (isMultiple ? '多选' : '单选');
+
             const container = document.getElementById('optionsContainer');
             container.innerHTML = '';
 
@@ -693,11 +797,15 @@
                 const lbl = document.createElement('label');
                 lbl.className = 'option';
                 const inputType = isMultiple ? 'checkbox' : 'radio';
+                // 去掉选项文字自带的 "A. " 前缀，字母改由圆圈展示
+                const text = option.replace(/^[A-Ha-h][.、．]\s*/, '');
                 lbl.innerHTML = `
                     <input type="${inputType}" name="answer" value="${index}">
-                    <span class="option-label">${option}</span>
+                    <span class="option-circle">${LETTERS[index]}</span>
+                    <span class="option-label">${text}</span>
                 `;
                 lbl.onclick = () => {
+                    if (answered) return;
                     if (isMultiple) {
                         const input = lbl.querySelector('input');
                         if (input) input.checked = !input.checked;
@@ -710,13 +818,27 @@
             });
 
             document.getElementById('resultSection').classList.remove('show', 'correct', 'incorrect');
+            document.getElementById('answerLine').classList.remove('show');
+            document.getElementById('answerStats').classList.remove('show');
             document.getElementById('submitBtn').style.display = 'block';
-            document.getElementById('nextBtn').style.display = 'none';
             document.getElementById('masterBtn').style.display = 'none';
+            // 翻页按钮状态：第一题禁用「上一页」；最后一题的「下一页」会进入完成页
+            document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
+            document.getElementById('nextBtn').disabled = false;
+            document.getElementById('nextBtn').textContent =
+                currentQuestionIndex >= activeList.length - 1 ? '完成' : '下一页';
             answered = false;
 
             persistCurrentIndex();
             updateProgress();
+        }
+
+        // ===== 上一页 =====
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                renderQuestion();
+            }
         }
 
         function updateMultipleSelection() {
@@ -769,47 +891,85 @@
                 renderCategoryButtons();
             }
 
-            if (isCorrect) {
-                showResult(true, question.explanation);
-                if (isMultiple) {
-                    question.correct.forEach(idx => {
-                        document.querySelectorAll('.option')[idx].classList.add('correct');
-                    });
-                } else {
-                    document.querySelectorAll('.option')[question.correct].classList.add('correct');
-                }
-            } else {
-                showResult(false, question.explanation);
-                selectedIndices.forEach(idx => {
-                    if (isMultiple && !question.correct.includes(idx)) {
-                        document.querySelectorAll('.option')[idx].classList.add('incorrect');
-                    } else if (!isMultiple) {
-                        document.querySelectorAll('.option')[idx].classList.add('incorrect');
-                    }
-                });
-                if (isMultiple) {
-                    question.correct.forEach(idx => {
-                        document.querySelectorAll('.option')[idx].classList.add('correct');
-                    });
-                } else {
-                    document.querySelectorAll('.option')[question.correct].classList.add('correct');
-                }
-            }
+            showResult(isCorrect, question.explanation);
+            markOptions(question, selectedIndices, isMultiple);
+            showAnswerLine(question, selectedIndices, isCorrect, isMultiple);
+            showAnswerStats(pointer, isCorrect);
 
             document.getElementById('submitBtn').style.display = 'none';
-            document.getElementById('nextBtn').style.display = 'block';
             // 错题本模式下，答完显示「已掌握，移出错题本」按钮
             document.getElementById('masterBtn').style.display =
                 isWrong(currentCategory) ? 'block' : 'none';
+        }
+
+        // ===== 答题后在选项上直接标记对错 =====
+        function markOptions(question, selectedIndices, isMultiple) {
+            const correctIdx = isMultiple ? question.correct.slice() : [question.correct];
+            document.querySelectorAll('.option').forEach((opt, i) => {
+                opt.classList.add('answered');
+                opt.classList.remove('selected');
+                const circle = opt.querySelector('.option-circle');
+                if (correctIdx.includes(i)) {
+                    opt.classList.add('is-correct');
+                    if (circle) circle.textContent = '✓';
+                } else if (selectedIndices.includes(i)) {
+                    opt.classList.add('is-wrongpick');
+                    if (circle) circle.textContent = '✕';
+                }
+            });
+        }
+
+        // ===== 底部「正确答案 / 您选择」=====
+        function showAnswerLine(question, selectedIndices, isCorrect, isMultiple) {
+            const correctIdx = (isMultiple ? question.correct.slice() : [question.correct])
+                .sort((a, b) => a - b);
+            const ansText = correctIdx.map(i => LETTERS[i]).join('、');
+            const selText = selectedIndices.map(i => LETTERS[i]).join('、');
+            const line = document.getElementById('answerLine');
+            line.innerHTML = `
+                <span>正确答案 <span class="ans-correct">${ansText}</span></span>
+                <span>您选择 <span class="${isCorrect ? 'ans-correct' : 'ans-wrong'}">${selText}</span></span>
+            `;
+            line.classList.add('show');
+        }
+
+        // ===== 作答统计（本人 / 累计）=====
+        function loadStats() {
+            try { return JSON.parse(localStorage.getItem(LS_STATS)) || {}; }
+            catch (e) { return {}; }
+        }
+        function showAnswerStats(pointer, isCorrect) {
+            const map = loadStats();
+            const key = pointer.category + '#' + pointer.index;
+            if (!map[key]) map[key] = { tries: 0, correct: 0 };
+            if (!map.__total) map.__total = { tries: 0, correct: 0 };
+            map[key].tries++;
+            map.__total.tries++;
+            if (isCorrect) { map[key].correct++; map.__total.correct++; }
+            localStorage.setItem(LS_STATS, JSON.stringify(map));
+
+            const q = map[key], t = map.__total;
+            const pct = q.tries ? Math.round(q.correct / q.tries * 100) : 0;
+            const tpct = t.tries ? Math.round(t.correct / t.tries * 100) : 0;
+            const box = document.getElementById('answerStats');
+            box.innerHTML =
+                `本人作答：${q.tries}次　正确率：${pct}%<br>` +
+                `累计作答：${t.tries}次　正确率：${tpct}%`;
+            box.classList.add('show');
         }
 
         function showResult(isCorrect, explanation) {
             const resultSection = document.getElementById('resultSection');
             const resultTitle = document.getElementById('resultTitle');
             const resultText = document.getElementById('resultText');
+            // 与刷题App一致：不再显示大块对错横幅，仅在有解析时展示解析
+            if (!explanation) {
+                resultSection.classList.remove('show', 'correct', 'incorrect');
+                return;
+            }
             resultSection.className = 'result-section show ' + (isCorrect ? 'correct' : 'incorrect');
-            resultTitle.textContent = isCorrect ? '✓ 正确' : '✗ 错误';
-            resultText.textContent = explanation || (isCorrect ? '回答正确！' : '请记住正确答案。');
+            resultTitle.textContent = '💡 解析';
+            resultText.textContent = explanation;
         }
 
         function nextQuestion() {
