@@ -193,45 +193,8 @@
             box-shadow: 0 2px 8px rgba(76, 125, 255, .25);
         }
 
-        /* ===== 背题模式列表 ===== */
-        .mem-list {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .mem-card {
-            background: #fff;
-            border: 1px solid #e8ebf0;
-            border-radius: 12px;
-            padding: 20px 24px;
-            box-shadow: 0 1px 3px rgba(31, 45, 61, .04);
-        }
-
-        .mem-card .q-head { margin-bottom: 10px; }
-        .mem-card .question-text { margin-bottom: 14px; }
-        .mem-card .option { cursor: default; }
-        .mem-card .option:hover { border-color: #e3e8ee; background: #fff; }
-        .mem-card .option.is-correct,
-        .mem-card .option.is-correct:hover { border-color: #bfe8d2; background: #f4fbf7; }
-
-        .mem-answer {
-            margin-top: 12px;
-            font-size: 14px;
-            font-weight: 700;
-            color: #1d9e63;
-        }
-
-        .mem-explain {
-            margin-top: 8px;
-            font-size: 13px;
-            color: #8a94a6;
-            line-height: 1.7;
-        }
-
         @media (max-width: 640px) {
             .mode-switch { padding: 10px 14px; }
-            .mem-card { padding: 16px 14px; }
         }
 
         /* ===== 主体 ===== */
@@ -605,13 +568,6 @@
             </div>
         </div>
 
-        <main class="app-main" id="memContent" style="display:none;">
-            <div class="mem-list" id="memList"></div>
-            <div class="empty-tip" id="memEmptyTip" style="display:none;">
-                🎉 错题本是空的！<br>做错的题目会自动收集到这里，方便你针对性复习。
-            </div>
-        </main>
-
         <div class="completion" id="completionSection">
             <h2>🎉 完成了！</h2>
             <div class="score" id="finalScore"></div>
@@ -822,13 +778,11 @@
             renderCurrentView();
         }
 
-        // 根据当前模式渲染主区域
+        // 根据当前模式渲染主区域（两种模式都是一题一页）
         function renderCurrentView() {
             document.getElementById('completionSection').classList.remove('show');
-            const mem = currentMode === 'memorize';
-            document.getElementById('memContent').style.display = mem ? 'block' : 'none';
-            document.getElementById('quizContent').style.display = mem ? 'none' : 'flex';
-            if (mem) renderMemorize();
+            document.getElementById('quizContent').style.display = 'flex';
+            if (currentMode === 'memorize') renderMemorizePage();
             else renderQuestion();
         }
 
@@ -837,57 +791,80 @@
                 ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
 
-        // ===== 背题模式：全部题目 + 直接标出正确答案 =====
-        function renderMemorize() {
-            const list = document.getElementById('memList');
-            const emptyTip = document.getElementById('memEmptyTip');
-            list.innerHTML = '';
+        // ===== 背题模式：一题一页，直接标出正确答案 =====
+        function renderMemorizePage() {
+            const emptyTip = document.getElementById('emptyTip');
+            const qSection = document.getElementById('questionSection');
+            const buttons = document.querySelector('.buttons');
 
             if (activeList.length === 0) {
+                qSection.style.display = 'none';
+                buttons.style.display = 'none';
                 emptyTip.style.display = 'block';
                 document.getElementById('progressBar').style.width = '0%';
                 document.getElementById('progressText').textContent = '';
                 return;
             }
+            qSection.style.display = 'block';
+            buttons.style.display = 'flex';
             emptyTip.style.display = 'none';
 
+            const pointer = activeList[currentQuestionIndex];
+            const question = pointer.question;
+            const isMultiple = Array.isArray(question.correct);
+            const correctIdx = isMultiple ? question.correct.slice() : [question.correct];
+
+            let label = `背题模式 · 第 ${currentQuestionIndex + 1} 题 / 共 ${activeList.length} 题`;
+            if (isWrong(currentCategory)) label = `错题复习 · ${label}`;
+            document.getElementById('questionNumber').textContent = label;
+
             const baseCat = isWrong(currentCategory) ? realCat(currentCategory) : currentCategory;
+            document.getElementById('qtypeBadge').textContent =
+                baseCat.includes('判断') ? '判断' : (isMultiple ? '多选' : '单选');
+            document.getElementById('questionText').textContent = question.question;
 
-            activeList.forEach((pointer, n) => {
-                const q = pointer.question;
-                const isMultiple = Array.isArray(q.correct);
-                const correctIdx = isMultiple ? q.correct.slice() : [q.correct];
-
-                let optHtml = '';
-                q.options.forEach((opt, i) => {
-                    const isCor = correctIdx.includes(i);
-                    const text = escapeHtml(opt.replace(/^[A-Ha-h][.、．]\s*/, ''));
-                    optHtml += `<div class="option${isCor ? ' is-correct' : ''}">
-                        <span class="option-circle">${isCor ? '✓' : LETTERS[i]}</span>
-                        <span class="option-label">${text}</span>
-                    </div>`;
-                });
-
-                const badge = baseCat.includes('判断') ? '判断' : (isMultiple ? '多选' : '单选');
-                const ansText = correctIdx.slice().sort((a, b) => a - b).map(i => LETTERS[i]).join('、');
-
-                const card = document.createElement('div');
-                card.className = 'mem-card';
-                card.innerHTML = `
-                    <div class="q-head">
-                        <span class="question-number">第 ${n + 1} 题</span>
-                        <span class="qtype-badge">${badge}</span>
-                    </div>
-                    <div class="question-text">${escapeHtml(q.question)}</div>
-                    <div class="options">${optHtml}</div>
-                    <div class="mem-answer">正确答案：${ansText}</div>
-                    ${q.explanation ? `<div class="mem-explain">💡 ${escapeHtml(q.explanation)}</div>` : ''}
+            // 选项：正确项直接绿色标出，不可点击
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+            question.options.forEach((option, index) => {
+                const isCor = correctIdx.includes(index);
+                const lbl = document.createElement('label');
+                lbl.className = 'option answered' + (isCor ? ' is-correct' : '');
+                const text = option.replace(/^[A-Ha-h][.、．]\s*/, '');
+                lbl.innerHTML = `
+                    <input type="${isMultiple ? 'checkbox' : 'radio'}" name="answer" value="${index}">
+                    <span class="option-circle">${isCor ? '✓' : LETTERS[index]}</span>
+                    <span class="option-label">${text}</span>
                 `;
-                list.appendChild(card);
+                container.appendChild(lbl);
             });
 
-            document.getElementById('progressBar').style.width = '100%';
-            document.getElementById('progressText').textContent = `背题 · 共 ${activeList.length} 题`;
+            // 直接给出正确答案
+            const ansText = correctIdx.slice().sort((a, b) => a - b).map(i => LETTERS[i]).join('、');
+            const line = document.getElementById('answerLine');
+            line.innerHTML = `<span>正确答案 <span class="ans-correct">${ansText}</span></span>`;
+            line.classList.add('show');
+
+            document.getElementById('answerStats').classList.remove('show');
+            const resultSection = document.getElementById('resultSection');
+            if (question.explanation) {
+                resultSection.className = 'result-section show';
+                document.getElementById('resultTitle').textContent = '💡 解析';
+                document.getElementById('resultText').textContent = question.explanation;
+            } else {
+                resultSection.classList.remove('show', 'correct', 'incorrect');
+            }
+
+            // 背题模式无需作答：隐藏确定，只保留翻页
+            document.getElementById('submitBtn').style.display = 'none';
+            document.getElementById('masterBtn').style.display = 'none';
+            document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
+            document.getElementById('nextBtn').disabled = false;
+            document.getElementById('nextBtn').textContent =
+                currentQuestionIndex >= activeList.length - 1 ? '完成' : '下一页';
+
+            persistCurrentIndex();
+            updateProgress();
         }
 
         function renderQuestion() {
@@ -971,7 +948,7 @@
         function prevQuestion() {
             if (currentQuestionIndex > 0) {
                 currentQuestionIndex--;
-                renderQuestion();
+                renderCurrentView();
             }
         }
 
@@ -1109,7 +1086,7 @@
         function nextQuestion() {
             if (currentQuestionIndex < activeList.length - 1) {
                 currentQuestionIndex++;
-                renderQuestion();
+                renderCurrentView();
             } else {
                 showCompletion();
             }
