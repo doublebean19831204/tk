@@ -162,6 +162,78 @@
         .category-btn.wrong-btn:hover { color: #d64545; background: #fff5f5; }
         .category-btn.wrong-btn.active { color: #d64545; border-bottom-color: #d64545; }
 
+        /* ===== 模式切换（答题 / 背题） ===== */
+        .mode-switch {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 12px 24px;
+            background: #fff;
+            border-bottom: 1px solid #e8ebf0;
+        }
+
+        .mode-btn {
+            padding: 9px 0;
+            border: 1px solid #dfe4ea;
+            background: #f7f9fc;
+            color: #5a6b7b;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .15s ease;
+        }
+
+        .mode-btn:hover { border-color: #b9c8ff; color: #3d7bff; }
+
+        .mode-btn.active {
+            background: #4c7dff;
+            border-color: #4c7dff;
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(76, 125, 255, .25);
+        }
+
+        /* ===== 背题模式列表 ===== */
+        .mem-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .mem-card {
+            background: #fff;
+            border: 1px solid #e8ebf0;
+            border-radius: 12px;
+            padding: 20px 24px;
+            box-shadow: 0 1px 3px rgba(31, 45, 61, .04);
+        }
+
+        .mem-card .q-head { margin-bottom: 10px; }
+        .mem-card .question-text { margin-bottom: 14px; }
+        .mem-card .option { cursor: default; }
+        .mem-card .option:hover { border-color: #e3e8ee; background: #fff; }
+        .mem-card .option.is-correct,
+        .mem-card .option.is-correct:hover { border-color: #bfe8d2; background: #f4fbf7; }
+
+        .mem-answer {
+            margin-top: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1d9e63;
+        }
+
+        .mem-explain {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #8a94a6;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 640px) {
+            .mode-switch { padding: 10px 14px; }
+            .mem-card { padding: 16px 14px; }
+        }
+
         /* ===== 主体 ===== */
         #quizContent {
             display: flex;
@@ -487,6 +559,11 @@
             </div>
         </header>
 
+        <div class="mode-switch">
+            <button class="mode-btn active" id="modeQuizBtn" onclick="setMode('quiz')">答题模式</button>
+            <button class="mode-btn" id="modeMemBtn" onclick="setMode('memorize')">背题模式</button>
+        </div>
+
         <nav class="category-selector" id="categorySelector"></nav>
 
         <div id="quizContent">
@@ -528,6 +605,13 @@
             </div>
         </div>
 
+        <main class="app-main" id="memContent" style="display:none;">
+            <div class="mem-list" id="memList"></div>
+            <div class="empty-tip" id="memEmptyTip" style="display:none;">
+                🎉 错题本是空的！<br>做错的题目会自动收集到这里，方便你针对性复习。
+            </div>
+        </main>
+
         <div class="completion" id="completionSection">
             <h2>🎉 完成了！</h2>
             <div class="score" id="finalScore"></div>
@@ -565,6 +649,8 @@
         let activeList = [];
         let currentQuestionIndex = 0;
         let answered = false;
+        const LS_MODE = 'quiz_mode_v1';
+        let currentMode = localStorage.getItem(LS_MODE) || 'quiz';
 
         // 加载题库数据：优先使用内嵌的 questions-data.js（双击即可用），
         // 如果不存在再尝试从 questions.json 加载（需本地服务器）。
@@ -657,6 +743,7 @@
 
         // ===== 初始化 =====
         function init() {
+            syncModeButtons();
             renderCategoryButtons();
             // 恢复上次所在分类
             const last = localStorage.getItem(LS_LAST);
@@ -714,13 +801,93 @@
             currentQuestionIndex = idx;
             answered = false;
 
-            document.getElementById('quizContent').style.display = 'flex';
-            document.getElementById('completionSection').classList.remove('show');
             document.getElementById('clearWrongBtn').style.display =
                 isWrong(category) ? 'inline-block' : 'none';
 
             renderCategoryButtons();
-            renderQuestion();
+            renderCurrentView();
+        }
+
+        // ===== 模式切换 =====
+        function syncModeButtons() {
+            document.getElementById('modeQuizBtn').classList.toggle('active', currentMode === 'quiz');
+            document.getElementById('modeMemBtn').classList.toggle('active', currentMode === 'memorize');
+        }
+
+        function setMode(mode) {
+            if (currentMode === mode) return;
+            currentMode = mode;
+            localStorage.setItem(LS_MODE, mode);
+            syncModeButtons();
+            renderCurrentView();
+        }
+
+        // 根据当前模式渲染主区域
+        function renderCurrentView() {
+            document.getElementById('completionSection').classList.remove('show');
+            const mem = currentMode === 'memorize';
+            document.getElementById('memContent').style.display = mem ? 'block' : 'none';
+            document.getElementById('quizContent').style.display = mem ? 'none' : 'flex';
+            if (mem) renderMemorize();
+            else renderQuestion();
+        }
+
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, c =>
+                ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        // ===== 背题模式：全部题目 + 直接标出正确答案 =====
+        function renderMemorize() {
+            const list = document.getElementById('memList');
+            const emptyTip = document.getElementById('memEmptyTip');
+            list.innerHTML = '';
+
+            if (activeList.length === 0) {
+                emptyTip.style.display = 'block';
+                document.getElementById('progressBar').style.width = '0%';
+                document.getElementById('progressText').textContent = '';
+                return;
+            }
+            emptyTip.style.display = 'none';
+
+            const baseCat = isWrong(currentCategory) ? realCat(currentCategory) : currentCategory;
+
+            activeList.forEach((pointer, n) => {
+                const q = pointer.question;
+                const isMultiple = Array.isArray(q.correct);
+                const correctIdx = isMultiple ? q.correct.slice() : [q.correct];
+
+                let optHtml = '';
+                q.options.forEach((opt, i) => {
+                    const isCor = correctIdx.includes(i);
+                    const text = escapeHtml(opt.replace(/^[A-Ha-h][.、．]\s*/, ''));
+                    optHtml += `<div class="option${isCor ? ' is-correct' : ''}">
+                        <span class="option-circle">${isCor ? '✓' : LETTERS[i]}</span>
+                        <span class="option-label">${text}</span>
+                    </div>`;
+                });
+
+                const badge = baseCat.includes('判断') ? '判断' : (isMultiple ? '多选' : '单选');
+                const ansText = correctIdx.slice().sort((a, b) => a - b).map(i => LETTERS[i]).join('、');
+
+                const card = document.createElement('div');
+                card.className = 'mem-card';
+                card.innerHTML = `
+                    <div class="q-head">
+                        <span class="question-number">第 ${n + 1} 题</span>
+                        <span class="qtype-badge">${badge}</span>
+                    </div>
+                    <div class="question-text">${escapeHtml(q.question)}</div>
+                    <div class="options">${optHtml}</div>
+                    <div class="mem-answer">正确答案：${ansText}</div>
+                    ${q.explanation ? `<div class="mem-explain">💡 ${escapeHtml(q.explanation)}</div>` : ''}
+                `;
+                list.appendChild(card);
+            });
+
+            document.getElementById('progressBar').style.width = '100%';
+            document.getElementById('progressText').textContent = `背题 · 共 ${activeList.length} 题`;
         }
 
         function renderQuestion() {
@@ -1009,10 +1176,8 @@
             if (n > activeList.length) n = activeList.length;
             currentQuestionIndex = n - 1;
             answered = false;
-            document.getElementById('quizContent').style.display = 'flex';
-            document.getElementById('completionSection').classList.remove('show');
-            renderQuestion();
             input.value = '';
+            renderCurrentView();
         }
 
         // ===== 重置当前分类进度 =====
@@ -1022,9 +1187,7 @@
             const map = loadProgress();
             map[currentCategory] = 0;
             saveProgressMap(map);
-            document.getElementById('quizContent').style.display = 'flex';
-            document.getElementById('completionSection').classList.remove('show');
-            renderQuestion();
+            renderCurrentView();
         }
 
         // ===== 已掌握，移出当前错题 =====
@@ -1037,7 +1200,7 @@
                 currentQuestionIndex = Math.max(0, activeList.length - 1);
             }
             renderCategoryButtons();
-            renderQuestion();
+            renderCurrentView();
         }
 
         // ===== 清空当前分类的错题本 =====
@@ -1051,7 +1214,7 @@
             activeList = buildActiveList(currentCategory);
             currentQuestionIndex = 0;
             renderCategoryButtons();
-            renderQuestion();
+            renderCurrentView();
         }
 /* SIG:BEGIN:guard */
         /* ============================================================
