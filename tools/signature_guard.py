@@ -286,7 +286,7 @@ def guard_body():
     "\n"
     "            // 控制台常驻署名（低调）\n"
     "            try {\n"
-    "                console.log('%c题库系统%c  制作人：徐徐、任欣 · 微信：doublebean_vip',\n"
+    "                console.log(\"%c中铁十八局集团市政工程有限公司'桂水安'题库系统%c  制作人：徐徐、任欣 · 微信：doublebean_vip\",\n"
     "                    'background:#bbb;color:#fff;padding:1px 6px;border-radius:3px;',\n"
     "                    'color:#999;');\n"
     "                console.log('%c' + AUTHOR_SIGNATURE.copyright, 'color:#ccc;');\n"

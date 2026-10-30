@@ -28,7 +28,7 @@
     "验证.py"
   ],
   "sha256": {
-    "index.html": "40afc531ad69c03fe1718b743e13bd2ac298f35f82fa2e613aa236658c148cdc",
+    "index.html": "39f5fd9aebd595a8fd6c90dc517f9c1d53daf0db5812e265901a86b38666b15e",
     "questions-data.js": "c41a5ebf1df5298ffebac3da0f6bf0c03a08f08354d8e513e0fa2eed4b0e72a8",
     "questions.json": "5ed350630cd3a34d85b92fcc5c7f683bf8c9a77dd1b91b0dc004044ab0c86051",
     "LICENSE": "712d3bdc2fb24648467843146171ab22e506aa3357a955242a4557259080363c",
@@ -37,7 +37,7 @@
     "assets/wechat_qr.png": "b5c17e3d116a128979912f0602143df637f10d61f349643dec0b57a8ac975897",
     ".github/workflows/pages.yml": "2bb0e04d2e04f40b5c74a5ee8ee8d8af19c99fa66b82857d6671853d38cad1a0",
     ".github/workflows/signature-guard.yml": "4ba2f621a6c0a5608a028f80566565f8b3e02f0a0b046a1a5abffaf874eb52da",
-    "tools/signature_guard.py": "7c65a27e7a36d6d41f6a8e7ef22acb95229780774a68af8c2ee1f1c000440e37",
+    "tools/signature_guard.py": "82609384606b2669cbc031de902d4a405ea76a1cd6f3434b62cc75d2255ae1dc",
     "转换题库.py": "783fa88e2335653cebe94ecac3026294cecd5ee6a564d6acc5de03be91783ef6",
     "题库快速转换.py": "fcc9b8bcfeb74c067d180d34f5e029071e63e03ae95c734df78cee79269016ed",
     "题库转换器.py": "599bf43b67be79ff6ef81d0fa6cd026c07dd1e4a9a3800740354ff2887339bf6",
